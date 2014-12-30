@@ -1,0 +1,105 @@
+								DOCUMENTATION: DOS_analysis.py
+
+This document is to provide details about the DOS_analysis.py script, which is a script for density of states analysis using DOSCAR and CONTCAR files from VASP calculations.
+
+The code performs the function of using DOSCAR as an input file and then doing calculation to aid in DOS analysis. The description of code is as follows:
+
+a) The code splits the DOSCAR file into individual atoms and the output is located in the split_DOSCAR directory which is created in the working directory when the script is executed.
+
+b) The code is user friendly and operates in an interactive way to carry out the calculations needed by the user.
+
+c) The code uses trapezoidal rule for integration of density of states with respect to energy.
+
+Details to know before using the code:
+
+The code operates by creating an Atom_ matrix of the entire DOSCAR file with following elements:
+
+For a system with:
+List of energies:		[E]
+Fermi level Energy:		Ef
+Ef normalized energy list:	[Ef_N] = (E-Ef)
+Atom 1:				[A1]
+Atom 2:				[A2]
+.
+.
+.
+.
+Atom n:				[An]
+
+Atom_matrix = [[E],[A1],[A2],[A3],.........,[An]]
+
+Each of these [Ai]'s is a matrix that stores information about the occupied states in the ith atom. The number "i" in the [Ai] refers to the number at which the atom appears in the CONTCAR file.
+
+###################################################################################################################################################################################################################
+LORBIT = 10
+
+For calculations performed using LORBIT = 10, DOSCAR has orbital occupancy split into s, p, d, f or s_up, s_down, p_up, p_down, d_up, down and f_up, f_down depending on whether ISPIN = 1 or 2 respectively. Hence for LORBIT = 10, the atom lists [Ai] are created as follows:
+
+[Ai]		 = [[Ef_N]    [s_up]    [s_down]    [p_up]    [p_down]    [d_up]    [d_down]    [f_up]    [f_down]]
+Ref. no.	 = [  0          1         2           3         4          5          6           7          8   ]
+
+Even for non-spin polarized calculations the [Ai]'s are split into up and down orbitals with the assumption: s_up = s/2 and s_down = -s/2 and the total occupancy is calculated as s = s_up - s_down = s/2 - (-s/2) = s. The Ref. no.s mentioned for each orbital are critically important as these would be used for specifiying the orbitals to be added when the script is run. 
+
+###################################################################################################################################################################################################################
+LORBIT = 11
+
+For calculations performed using LORBIT = 11, DOSCAR has orbital occupacy split into s, p_y, p_z, p_x, d_xy, d_yz, d_z2, d_xz, d_x2-y2, f_y(3x2-y2), f_xyz, f_yz2, f_z3, f_xz2, f_z(x2-y2), f__x(x2-3y2) or their corresponding up/down orboitals depending on whether ISPIN = 1 or 2 respectively. Hence for LORBIT = 11, the atom lists [Ai] are created as follows:
+
+[Ai]		=[[Ef_N] [s_up] [s_down] [p_y_up]............................................................................................................................[f_x(x2-3y2)_down]] 
+
+The reference no.s for LORBIT = 11 are:
+
+[Ef_N]	= 0
+[s_up]	= 1		[p_y_up]	= 3	[d_xy_up]	= 9	[f_y(3x2-y2)_up]	= 19
+[s_down]= 2		[p_y_down]	= 4	[d_xy_down]	= 10	[f_y(3x2-y2)_down]	= 20
+			[p_z_up]	= 5	[d_yz_up]	= 11	[f_xyz_up]		= 21
+			[p_z_down]	= 6	[d_yz_down]	= 12	[f_xyz_down]		= 22
+			[p_x_up]	= 7	[d_z2_up]	= 13	[f_yz2_up]		= 23
+			[p_x_down]	= 8	[d_z2_down]	= 14	[f_yz2_down]		= 24
+						[d_xz_up]	= 15	[f_z3_up]		= 25
+						[d_xz_down]	= 16	[f_z3_down]		= 26
+						[d_x2-y2_up]	= 17	[f_xz2_up]		= 27
+						[d_x2-y2_down]	= 18	[f_xz2_down]		= 28
+									[f_z(x2-y2)_up]		= 29
+									[f_z(x2-y2)_down]	= 30
+									[f__x(x2-3y2)_up]	= 31
+									[f__x(x2-3y2)_down]	= 32
+
+Even for non-spin polarized calculations the [Ai]'s are split into up and down orbitals with the assumption: s_up = s/2 and s_down = -s/2 and the total occupancy is calculated as s = s_up - s_down = s/2 - (-s/2) = s. The Ref. no.s mentioned for each orbital are critically important as these would be used for specifiying the orbitals to be added when the script is run.
+###################################################################################################################################################################################################################
+
+During the analysis, we figured out that for two calculations of the same system: A --> ( non-spin polarized) and B --> (spin polarized), the way VASP reports the state occupancy is such that for a particular value of energy for A, if it gives us s = x, then for B for the same value of energy, it will report s_up ~ x and s_down ~ x instead of reporting s_up ~ x/2 and s_down ~ x/2. As a result, during the creation of Atom_matrix for spin-polarized system (B) we have used s_up(Ai) = s_up(DOSCAR)/2  to make sure that the absolute values of integerals below the fermi level reflect the no. of electrons available with that atom.
+
+###################################################################################################################################################################################################################
+
+The code provides the user with various options. The user can run the code for analyzing:
+a) All atoms
+b) Range of atoms (For cases where one needs to perform operations on all the atoms of a particular layer)
+c) Specific atoms
+
+For each of the above options: the user gets to choose if he/she wants to add:
+a) All orbitals 
+b) Specific orbitals [User needs to provide the reference no. for the orbital using the table described above]
+
+
+1) For "All atoms" and "Range of atoms", if the user selects All orbitals, the script will generate two output files: a) spin_polarized b) non_spin_polarized:
+a) spin polarized file contains information on total_s_up, total_s_down, total_p_up, total_p_down, total_d_up, total_d_down, total_f_up, total_f_down, total_up and total_down and their respective integrated states with respect to the fermi normalized energy. It also creates a directory that saves all the plots of the users current calculation. If you want a detailed analysis for just one particular atom, you would be advised to choose "Range of Atoms" and then input the atom number as both the lower and the upper limit instead of using "Specific atoms". This is because the "Specific atoms" is meant to do calculations like (Atom_no2_All orbitals + Atom_no_3_s_up + Atom_no_6_d_xz_down) and then report the final sum of the calculation. It therefore doesn't give you individual splits like s_up/s_down and so on. The output will just have one final sum of everything that the user added. 
+
+b) non spin polarized file contains information on total_s, total_p, total_d, total_f and total_DOS and their respective integrated states with respect to the fermi normalized energy. It also creates a directory to save all the plots of the users current calculation.
+
+2) For "All atoms" and "Range of atoms", if the user selects specific orbitals, he/she will have to enter the orbital no. from the reference list stated above. For eg., if you need to add s, p_y and f_z3, you will have to enter: 1 2 3 4 25 26. You will enter these numbers when the program is running. In case you wish to add only s_up, you will enter just 1 for the orbital to be added. Make sure you use the reference list for the LORBIT that you used in your calculations. In this case, the output file will have just two columns: one for the normalized fermi energy and one for the states that the user selected. 
+
+3) For working with specific atoms, if you choose specific orbital, you will have to enter the orbital no. in a manner similar to case above. The output for this would be similar to the one in the case above.
+
+####################################################################################################################################################################################################################
+
+Feel free to give any feedback/suggestions/ or report errors in the output to abajpai1@nd.edu. The program could have been written with a far more eficient algorithm but since this is so to say "my first program ever", I realized it only when I was about to finish it. I would do a better job with the algorithm for future scripts.
+
+####################################################################################################################################################################################################################
+
+  
+
+
+	
+
+
