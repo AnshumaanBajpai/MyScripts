@@ -9,8 +9,7 @@ Created on Mon Dec 30 11:47:30 2013
 ##################################################################################
 ##################################################################################
 ##               This code was written by Anshumaan Bajpai                      ##
-##    during the Christmas week of 2013 when rest of the world was celebrating  ##
-##   and should be remembered for the devotion and commitment of the student.   ##
+##                    during the Christmas week of 2013.                        ##
 ##    This code would have been impossible without Mike Penninger whose         ##
 ############   encouragement and technical help made this possible.       ########
 ##################################################################################
